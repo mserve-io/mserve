@@ -1,5 +1,6 @@
 import yargs from "yargs";
-import { deployFileOrDirectory } from "@mml-io/mserve";
+import { deployFileOrDirectory } from "./deploy.js";
+
 async function main() {
   await yargs(process.argv.slice(2))
     .scriptName("mserve")
@@ -39,7 +40,7 @@ async function main() {
       (argv) => {
         const { apiKey, project, origin } = argv;
         const files = argv.files as string[];
-        deployFileOrDirectory({ apiKey, project, files, origin });
+        void deployFileOrDirectory({ apiKey, project, files, origin });
       },
     )
     .help()

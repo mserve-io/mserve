@@ -66,5 +66,8 @@
   "dependencies": {
     "chalk": "^5.3.0",
     "yargs": "^17.7.2"
+  },
+  "peerDependencies": {
+    "@mml-io/esbuild-plugin-mml": "git://github.com/mml-io/esbuild-plugin-mml.git#c108ba025216e1944511b96c0df6651cc95b2070"
   }
 }
