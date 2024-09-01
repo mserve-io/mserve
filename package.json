@@ -68,6 +68,6 @@
     "yargs": "^17.7.2"
   },
   "peerDependencies": {
-    "@mml-io/esbuild-plugin-mml": "git://github.com/mml-io/esbuild-plugin-mml.git#c108ba025216e1944511b96c0df6651cc95b2070"
+    "@mml-io/esbuild-plugin-mml": "git://github.com/mml-io/esbuild-plugin-mml.git#9342d03ba5543bdc291c2632e8972d2246623a55"
   }
 }

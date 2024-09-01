@@ -1,0 +1,52 @@
+{
+  "mmlDocuments": {
+    "0": {
+      "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_collision-events",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      }
+    },
+    "1": {
+      "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_dicey",
+      "position": {
+        "x": 0,
+        "y": 100,
+        "z": 0
+      }
+    },
+    "2": {
+      "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_moving-platform",
+      "position": {
+        "x": 100,
+        "y": 0,
+        "z": 0
+      }
+    },
+    "3": {
+      "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_position-probe",
+      "position": {
+        "x": 100,
+        "y": 100,
+        "z": 0
+      }
+    },
+    "4": {
+      "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_videoplayer",
+      "position": {
+        "x": 0,
+        "y": -100,
+        "z": 0
+      }
+    },
+    "5": {
+      "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_weather",
+      "position": {
+        "x": -100,
+        "y": 0,
+        "z": 0
+      }
+    }
+  }
+}

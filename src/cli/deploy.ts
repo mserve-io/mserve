@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import chalk from "chalk";
 import { gzip } from "../lib/gzip.js";
+import { MMLWorldConfig } from "@mml-io/esbuild-plugin-mml";
 
 // NOTE: URL.parse was only introduced in nodejs 22, but typescript seems to think it exists,
 // even though it is configured with the nodejs 20 base. No idea why. This emulates the behaviour.
@@ -37,6 +38,11 @@ export async function deployFile({
   mserve: { protocol?: string; host: string };
 }) {
   console.log("deploying file", file, "with id", id);
+  interface MMLWorldInstanceRequest {
+    name: string;
+    mmlDocumentsConfiguration: MMLWorldConfig;
+  }
+
   interface Request {
     name: string;
     description?: string;
@@ -47,52 +53,99 @@ export async function deployFile({
       source: string;
     };
   }
-  const url = `${mserve.protocol}//${mserve.host}/v1/mml-objects/${project}/object-instances`;
-  const source = await fs.readFile(file, { encoding: "utf8" });
-  const request: Request = {
-    name: id,
-    source: {
-      type: "source",
-      source,
-    },
-  };
-  let response = await fetch(url + "/" + id, {
-    method: "POST",
-    body: await gzip(JSON.stringify({ ...request, parameters: {} })),
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      "content-type": "application/json",
-      "content-encoding": "gzip",
-    },
-  });
+  const objectInstancesUrl = `${mserve.protocol}//${mserve.host}/v1/mml-objects/${project}/object-instances`;
+  const worldInstancesUrl = `${mserve.protocol}//${mserve.host}/v1/worlds/${project}/web-world-instances`;
 
-  if (response.status === 404) {
-    console.log("object instance does not exist, creating...");
-    response = await fetch(url, {
+  const source = await fs.readFile(file, { encoding: "utf8" });
+  if (path.extname(file) === ".html") {
+    const request: Request = {
+      name: id,
+      source: {
+        type: "source",
+        source,
+      },
+    };
+    let response = await fetch(objectInstancesUrl + "/" + id, {
       method: "POST",
-      body: await gzip(JSON.stringify({ ...request, id })),
+      body: await gzip(JSON.stringify({ ...request, parameters: {} })),
       headers: {
         authorization: `Bearer ${apiKey}`,
         "content-type": "application/json",
         "content-encoding": "gzip",
       },
     });
-  }
-  if (response.status !== 200) {
-    const { status } = response;
-    const message = await response.text();
-    console.log(chalk.red("failed to deploy object instance"), {
-      id,
-      status,
-      message,
-    });
-    return {
-      text: "",
-      detail: {
-        status: response.status,
-        message: await response.text(),
-      },
+
+    if (response.status === 404) {
+      console.log("object instance does not exist, creating...");
+      response = await fetch(objectInstancesUrl, {
+        method: "POST",
+        body: await gzip(JSON.stringify({ ...request, id })),
+        headers: {
+          authorization: `Bearer ${apiKey}`,
+          "content-type": "application/json",
+          "content-encoding": "gzip",
+        },
+      });
+    }
+    if (response.status !== 200) {
+      const { status } = response;
+      const message = await response.text();
+      console.log(chalk.red("failed to deploy object instance"), {
+        id,
+        status,
+        message,
+      });
+      return {
+        text: "",
+        detail: {
+          status: response.status,
+          message: await response.text(),
+        },
+      };
+    }
+  } else if (file.endsWith(".json")) {
+    const request: MMLWorldInstanceRequest = {
+      name: id,
+      mmlDocumentsConfiguration: JSON.parse(source) as unknown,
     };
+    let response = await fetch(worldInstancesUrl + "/" + id, {
+      method: "POST",
+      body: await gzip(JSON.stringify(request)),
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+        "content-encoding": "gzip",
+      },
+    });
+
+    if (response.status === 404) {
+      console.log("world instance does not exist, creating...");
+      response = await fetch(worldInstancesUrl, {
+        method: "POST",
+        body: await gzip(JSON.stringify(request)),
+        headers: {
+          authorization: `Bearer ${apiKey}`,
+          "content-type": "application/json",
+          "content-encoding": "gzip",
+        },
+      });
+    }
+    if (response.status !== 200) {
+      const { status } = response;
+      const message = await response.text();
+      console.log(chalk.red("failed to deploy world instance"), {
+        id,
+        status,
+        message,
+      });
+      return {
+        text: "",
+        detail: {
+          status: response.status,
+          message: await response.text(),
+        },
+      };
+    }
   }
   console.log(`deployed output ${id} to MServe`);
 }
@@ -114,7 +167,10 @@ export async function deployFileOrDirectory({
 
   for (const file of files) {
     const stat = await fs.stat(file);
-    if (stat.isFile() && path.extname(file) === ".html") {
+    if (
+      (stat.isFile() && path.extname(file) === ".html") ||
+      path.extname(file) === ".json"
+    ) {
       const id = path.basename(file, ".html");
       void deployFile({
         file,
@@ -127,7 +183,7 @@ export async function deployFileOrDirectory({
       const dir = file;
       const files = await fs.readdir(file);
       for (const file of files) {
-        const id = path.basename(file, ".html");
+        const id = path.basename(file).replace(/\.(html|json)$/, "");
         void deployFile({
           file: path.join(dir, file),
           id,

@@ -1,4 +1,7 @@
-import type { OutputProcessorProvider } from "@mml-io/esbuild-plugin-mml";
+import type {
+  OutputProcessorProvider,
+  MMLWorldConfig,
+} from "@mml-io/esbuild-plugin-mml";
 
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -30,7 +33,7 @@ export function mserveOutputProcessor({
   const deployables: Partial<Record<string, Deployable>> = {};
 
   return (log: typeof console.log) => ({
-    onOutput(inPath) {
+    onOutput(inPath: string) {
       const extname = path.extname(inPath);
 
       const dirname = path.dirname(inPath);
@@ -48,7 +51,7 @@ export function mserveOutputProcessor({
 
       return { importStr };
     },
-    async onEnd(outdir, result) {
+    async onEnd(outdir: string, result: esbuild.BuildResult) {
       if (!deploy) {
         log("skipping deployment");
         return;
@@ -57,7 +60,12 @@ export function mserveOutputProcessor({
       const outputs = Object.keys(result.metafile?.outputs ?? {});
       log("deploying outputs to MServe", { projectId, deployables, outputs });
 
-      interface Request {
+      interface MMLWorldInstanceRequest {
+        name: string;
+        mmlDocumentsConfiguration: MMLWorldConfig;
+      }
+
+      interface MMLObjectInstanceRequest {
         name: string;
         description?: string;
         enabled?: boolean;
@@ -67,7 +75,10 @@ export function mserveOutputProcessor({
           source: string;
         };
       }
-      const url = `${mserve.protocol ?? "https"}://${mserve.host}/v1/mml-objects/${projectId}/object-instances`;
+
+      const objectInstancesUrl = `${mserve.protocol ?? "https"}://${mserve.host}/v1/mml-objects/${projectId}/object-instances`;
+      const worldInstancesUrl = `${mserve.protocol ?? "https"}://${mserve.host}/v1/worlds/${projectId}/web-world-instances`;
+
       const out = Object.keys(result.metafile?.outputs ?? {}).map(
         async (output) => {
           const deployable = deployables[path.relative(outdir, output)];
@@ -78,51 +89,98 @@ export function mserveOutputProcessor({
           const source = await fs.readFile(path.resolve(__dirname, output), {
             encoding: "utf8",
           });
-          const request: Request = {
-            name,
-            source: {
-              type: "source",
-              source,
-            },
-          };
-          log("deploying", { deployable });
-          let response = await fetch(url + "/" + id, {
-            method: "POST",
-            body: await gzip(JSON.stringify({ ...request, parameters: {} })),
-            headers: {
-              authorization: `Bearer ${apiKey}`,
-              "content-type": "application/json",
-              "content-encoding": "gzip",
-            },
-          });
 
-          if (response.status === 404) {
-            log("object instance does not exist, creating...");
-            response = await fetch(url, {
+          if (output.endsWith(".html")) {
+            const request: MMLObjectInstanceRequest = {
+              name,
+              source: {
+                type: "source",
+                source,
+              },
+            };
+            log("deploying", { deployable });
+            let response = await fetch(objectInstancesUrl + "/" + id, {
               method: "POST",
-              body: await gzip(JSON.stringify({ ...request, id })),
+              body: await gzip(JSON.stringify({ ...request, parameters: {} })),
               headers: {
                 authorization: `Bearer ${apiKey}`,
                 "content-type": "application/json",
                 "content-encoding": "gzip",
               },
             });
-          }
-          if (response.status !== 200) {
-            const { status } = response;
-            const message = await response.text();
-            log("failed to deploy object instance", {
-              deployable,
-              status,
-              message,
-            });
-            return {
-              text: "",
-              detail: {
-                status: response.status,
-                message: await response.text(),
-              },
+
+            if (response.status === 404) {
+              log("object instance does not exist, creating...");
+              response = await fetch(objectInstancesUrl, {
+                method: "POST",
+                body: await gzip(JSON.stringify({ ...request, id })),
+                headers: {
+                  authorization: `Bearer ${apiKey}`,
+                  "content-type": "application/json",
+                  "content-encoding": "gzip",
+                },
+              });
+            }
+            if (response.status !== 200) {
+              const { status } = response;
+              const message = await response.text();
+              log("failed to deploy object instance", {
+                deployable,
+                status,
+                message,
+              });
+              return {
+                text: "",
+                detail: {
+                  status: response.status,
+                  message: await response.text(),
+                },
+              };
+            }
+          } else if (output.endsWith(".json")) {
+            const request: MMLWorldInstanceRequest = {
+              name,
+              mmlDocumentsConfiguration: JSON.parse(source) as unknown,
             };
+            log("deploying", { deployable });
+            let response = await fetch(worldInstancesUrl + "/" + id, {
+              method: "POST",
+              body: await gzip(JSON.stringify(request)),
+              headers: {
+                authorization: `Bearer ${apiKey}`,
+                "content-type": "application/json",
+                "content-encoding": "gzip",
+              },
+            });
+
+            if (response.status === 404) {
+              log("world instance does not exist, creating...");
+              response = await fetch(worldInstancesUrl, {
+                method: "POST",
+                body: await gzip(JSON.stringify({ ...request, id })),
+                headers: {
+                  authorization: `Bearer ${apiKey}`,
+                  "content-type": "application/json",
+                  "content-encoding": "gzip",
+                },
+              });
+            }
+            if (response.status !== 200) {
+              const { status } = response;
+              const message = await response.text();
+              log("failed to deploy world instance", {
+                deployable,
+                status,
+                message,
+              });
+              return {
+                text: "",
+                detail: {
+                  status: response.status,
+                  message: await response.text(),
+                },
+              };
+            }
           }
           log(`deployed output ${name} to MServe`, deployable);
         },
