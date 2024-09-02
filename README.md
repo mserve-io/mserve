@@ -15,7 +15,7 @@ The CLI currently supports deploying a set of MML documents files (or a director
 #### Installation
 
 ```
-npm i -g git+https://github.com/mserve-io/mserve.git
+npm i -g @mserve-io/mserve
 ```
 
 This project also provides a [Nix](https://nixos.org) flake that packages the CLI with it's shell completions.
