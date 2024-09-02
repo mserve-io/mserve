@@ -54,4 +54,44 @@ mserve deploy --project <project-id> ./examples
 
 ## esbuild plugin
 
-TODO
+This library exports an `OutputProcessorProvider` for [esbuild-plugin-mml](https://github.com/mml-io/esbuild-plugin-mml), which hooks into the build process, re-writes the imports to a format usable on MServe, and optionally deploy them to your chosen project.
+
+Below is an example usage of the outputProcessor
+
+```typescript
+import { mserveOutputProcessor } from "@mml-io/mserve";
+
+const {
+  MSERVE_PROJECT,
+  MSERVE_API_KEY,
+  MSERVE_PROTOCOL,
+  MSERVE_HOST,
+  MMLHOSTING_PROTOCOL = "wss",
+  MMLHOSTING_HOST = "mmlhosting.com"
+} = process.env as { [env: string]: string };
+
+const buildOptions: esbuild.BuildOptions = {
+  entryPoints: ["src/world.ts"],
+  outdir,
+  bundle: true,
+  minify: true,
+  plugins: [
+    mml({
+      verbose: true,
+      outputProcessor: mserveOutputProcessor({
+        deploy: true, // Optional: Deploy the artifacts to MServe after they have been processed
+        mserve: { // Optional: Used to override the endpoint to deploy to for testing purposes.
+          host: MSERVE_HOST,
+          protocol: MSERVE_PROTOCOL,
+        },
+        projectId: MSERVE_PROJECT, // Required: The project to deploy the documents and world config to
+        apiKey: MSERVE_API_KEY, // Required: Your MServe API key
+      }),
+      importPrefix: `${MMLHOSTING_PROTOCOL}://${MMLHOSTING_HOST}/v1/`, // Required: re-write the imports to a full URL to the document.
+    }),
+  ],
+};
+
+esbuild.build(buildOptions).catch(() => process.exit(1));
+```
+
