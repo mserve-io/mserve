@@ -23,7 +23,7 @@
           buildInputs = [ pkgs.nodejs_20 ];
           nativeBuildInputs = [ pkgs.installShellFiles ];
           src = self;
-          npmDepsHash = "sha256-DuW/ldfNQGQWA7aplZ+BI1bWKIBvJRORtUzmst7psSw=";
+          npmDepsHash = "sha256-rBz/oLvfyz57/xvjYC31WSQh2/27oXLgSL7vTqL5fqE=";
 
           postInstall = ''
             installShellCompletion --cmd mserve \
