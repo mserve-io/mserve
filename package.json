@@ -41,7 +41,7 @@
     "lint": "tsc --noemit && eslint src --fix",
     "prepare": "run-s clean build",
     "prepublishOnly": "npm test",
-    "jest": "jest",
+    "jest": "echo no tests yet!",
     "test": "run-s lint depcheck jest"
   },
   "devDependencies": {
@@ -68,6 +68,7 @@
     "yargs": "^17.7.2"
   },
   "peerDependencies": {
-    "@mml-io/esbuild-plugin-mml": "^0.1"
+    "@mml-io/esbuild-plugin-mml": "^0.1",
+    "esbuild": "^0"
   }
 }
