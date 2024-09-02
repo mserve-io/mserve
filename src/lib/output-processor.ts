@@ -5,7 +5,7 @@ import type {
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type esbuild from "esbuild";
 import { gzip } from "./gzip.js";
 
@@ -86,7 +86,7 @@ export function mserveOutputProcessor({
             return undefined;
           }
           const { name, id } = deployable;
-          const source = await fs.readFile(path.resolve(__dirname, output), {
+          const source = await fs.readFile(output, {
             encoding: "utf8",
           });
 
