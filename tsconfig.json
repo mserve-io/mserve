@@ -11,7 +11,7 @@
     "declaration": true,
     "declarationMap": true,
     "paths": {
-      "@mml-io/mserve": [
+      "@mserve-io/mserve": [
         "./src"
       ]
     }

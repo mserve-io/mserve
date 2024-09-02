@@ -1,8 +1,8 @@
 {
-  "name": "@mml-io/mserve",
+  "name": "@mserve-io/mserve",
   "version": "0.1.0",
   "description": "A CLI and library for deploying to MServe",
-  "homepage": "https://github.com/mml-io/mserve",
+  "homepage": "https://github.com/mserve-io/mserve",
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -26,10 +26,10 @@
     "mserve"
   ],
   "repository": {
-    "url": "git+https://github.com/mml-io/mserve"
+    "url": "git+https://github.com/mserve-io/mserve"
   },
   "bugs": {
-    "url": "https://github.com/mml-io/mserve/issues"
+    "url": "https://github.com/mserve-io/mserve/issues"
   },
   "files": [
     "dist"
@@ -68,6 +68,6 @@
     "yargs": "^17.7.2"
   },
   "peerDependencies": {
-    "@mml-io/esbuild-plugin-mml": "git://github.com/mml-io/esbuild-plugin-mml.git#9342d03ba5543bdc291c2632e8972d2246623a55"
+    "@mml-io/esbuild-plugin-mml": "0.0.0-experimental-198d28e-20240902"
   }
 }

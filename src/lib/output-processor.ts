@@ -35,8 +35,8 @@ export function mserveOutputProcessor({
   return (log: typeof console.log) => ({
     onOutput(inPath: string) {
       const extname = path.extname(inPath);
-
       const dirname = path.dirname(inPath);
+
       let name = path.basename(inPath, extname);
 
       if (name === "index") {

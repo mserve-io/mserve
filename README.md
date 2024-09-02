@@ -1,8 +1,8 @@
 # MServe
 
-[![main github actions](https://github.com/mml-io/mml/actions/workflows/main.yaml/badge.svg)](https://github.com/mml-io/mml/actions/workflows/main.yaml)
-[![npm version](https://img.shields.io/npm/v/mml-web.svg?style=flat)](https://www.npmjs.com/package/mml-web)
-![GitHub top language](https://img.shields.io/github/languages/top/mml-io/mml) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mml-io/mml/blob/main/LICENSE)
+[![main github actions](https://github.com/mserve-io/mserve/actions/workflows/main.yaml/badge.svg)](https://github.com/mserve-io/mserve/actions/workflows/main.yaml)
+[![npm version](https://img.shields.io/npm/v/%40mserve-io%2Fmserve?style=flat)](https://www.npmjs.com/package/@mserve-io/mserve)
+![GitHub top language](https://img.shields.io/github/languages/top/mserve-io/mserve) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/mserve-io/mserve/blob/main/LICENSE)
 
 [MServe](https://mserve.io) allows you to easily create and host virtual worlds populated with [https://mml.io](MML Documents).
 
@@ -15,7 +15,7 @@ The CLI currently supports deploying a set of MML documents files (or a director
 #### Installation
 
 ```
-npm i -g git+https://github.com/mml-io/mserve.git
+npm i -g git+https://github.com/mserve-io/mserve.git
 ```
 
 This project also provides a [Nix](https://nixos.org) flake that packages the CLI with it's shell completions.
