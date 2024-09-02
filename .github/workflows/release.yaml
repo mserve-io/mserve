@@ -1,0 +1,55 @@
+name: Release
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  checks: write
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish-release-packages:
+    name: Publish Packages
+    environment: package-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up nodejs
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: 20
+
+      - name: Cache NPM dependencies
+        uses: actions/cache@v4
+        id: cache-npm-deps
+        with:
+          path: |
+            node_modules
+            ~/.cache
+          key: ${{ runner.os }}-npm-v3-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-v3-
+
+      - name: Install dependencies
+        if: steps.cache-npm-deps.outputs.cache-hit != 'true'
+        shell: bash
+        run: npm i
+
+      - name: Publish
+        run: |
+          git config --global user.email "github-ci@mml.io"
+          git config --global user.name "github-ci-mml"
+
+          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
+
+          npm publish --tag latest --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
