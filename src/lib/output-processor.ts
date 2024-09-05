@@ -3,26 +3,9 @@ import type { OutputProcessorProvider } from "@mml-io/esbuild-plugin-mml";
 import path from "node:path";
 import crypto from "node:crypto";
 
-export interface MServeOutputProcessorOptions {
-  projectId: string;
-  apiKey: string;
-  mserve?: {
-    protocol?: "https" | "http" | (string & {});
-    host: string;
-  };
-  deploy?: boolean;
-}
-
-export function mserveOutputProcessor({
-  projectId,
-}: MServeOutputProcessorOptions): OutputProcessorProvider {
-  interface Deployable {
-    id: string;
-    name: string;
-    importStr: string;
-  }
-  const deployables: Partial<Record<string, Deployable>> = {};
-
+export function mserveOutputProcessor(
+  projectId: string,
+): OutputProcessorProvider {
   return () => ({
     onOutput(inPath: string) {
       const extname = path.extname(inPath);
@@ -38,9 +21,9 @@ export function mserveOutputProcessor({
 
       const importStr = `${projectId}_${id}`;
 
-      deployables[inPath] = { name, id, importStr };
+      const newPath = id + extname;
 
-      return { importStr };
+      return { importStr, path: newPath };
     },
   });
 }
