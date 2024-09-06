@@ -159,7 +159,7 @@ export async function deployFileOrDirectory({
   const parsedURL = parseURL(origin);
 
   if (parsedURL === null) {
-    console.log(chalk.red.bold(`Unable to parse MServer origin: "${origin}"`));
+    console.log(chalk.red.bold(`Unable to parse MServe origin: "${origin}"`));
     process.exit(-1);
   }
 
