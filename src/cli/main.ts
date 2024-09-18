@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import yargs from "yargs";
-import { deployFileOrDirectory } from "./deploy.js";
+import { deployFilesOrDirectories } from "./deploy.js";
 
 async function main() {
   await yargs(process.argv.slice(2))
@@ -40,8 +40,8 @@ async function main() {
       },
       (argv) => {
         const { apiKey, project, origin } = argv;
-        const files = argv.files as string[];
-        void deployFileOrDirectory({ apiKey, project, files, origin });
+        const paths = argv.files as string[];
+        void deployFilesOrDirectories({ apiKey, project, paths, origin });
       },
     )
     .help()

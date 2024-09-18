@@ -21,7 +21,7 @@ export interface BaseArgs {
 }
 
 export interface DeployArgs extends BaseArgs {
-  files: string[];
+  paths: string[];
 }
 
 export async function deployFile({
@@ -150,10 +150,10 @@ export async function deployFile({
   console.log(`deployed output ${id} to MServe`);
 }
 
-export async function deployFileOrDirectory({
+export async function deployFilesOrDirectories({
   apiKey,
   project,
-  files,
+  paths,
   origin,
 }: DeployArgs) {
   const parsedURL = parseURL(origin);
@@ -165,13 +165,13 @@ export async function deployFileOrDirectory({
 
   const { protocol, host } = parsedURL;
 
-  for (const file of files) {
+  for (const file of paths) {
     const stat = await fs.stat(file);
     if (
-      (stat.isFile() && path.extname(file) === ".html") ||
-      path.extname(file) === ".json"
+      stat.isFile() &&
+      (path.extname(file) === ".html" || path.extname(file) === ".json")
     ) {
-      const id = path.basename(file, ".html");
+      const id = path.basename(file).replace(/\.(html|json)$/, "");
       void deployFile({
         file,
         id,
@@ -180,18 +180,13 @@ export async function deployFileOrDirectory({
         mserve: { protocol, host },
       });
     } else if (stat.isDirectory()) {
-      const dir = file;
-      const files = await fs.readdir(file);
-      for (const file of files) {
-        const id = path.basename(file).replace(/\.(html|json)$/, "");
-        void deployFile({
-          file: path.join(dir, file),
-          id,
-          project,
-          apiKey,
-          mserve: { protocol, host },
-        });
-      }
+      const paths = await fs.readdir(file);
+      await deployFilesOrDirectories({
+        paths,
+        project,
+        apiKey,
+        origin,
+      });
     }
   }
 }
