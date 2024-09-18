@@ -180,7 +180,7 @@ export async function deployFilesOrDirectories({
         mserve: { protocol, host },
       });
     } else if (stat.isDirectory()) {
-      const paths = await fs.readdir(file);
+      const paths = (await fs.readdir(file)).map((f) => path.join(file, f));
       await deployFilesOrDirectories({
         paths,
         project,
