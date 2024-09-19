@@ -38,14 +38,14 @@ async function main() {
           default: ".",
         }).argv;
       },
-      (argv) => {
+      async (argv) => {
         const { apiKey, project, origin } = argv;
         const paths = argv.files as string[];
-        void deployFilesOrDirectories({ apiKey, project, paths, origin });
+        await deployFilesOrDirectories({ apiKey, project, paths, origin });
       },
     )
     .help()
     .parse();
 }
 
-void main();
+void main().then(() => process.exit(0));

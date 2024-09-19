@@ -95,13 +95,7 @@ export async function deployFile({
         status,
         message,
       });
-      return {
-        text: "",
-        detail: {
-          status: response.status,
-          message: await response.text(),
-        },
-      };
+      return;
     }
   } else if (file.endsWith(".json")) {
     const request: MMLWorldInstanceRequest = {
@@ -122,7 +116,7 @@ export async function deployFile({
       console.log("world instance does not exist, creating...");
       response = await fetch(worldInstancesUrl, {
         method: "POST",
-        body: await gzip(JSON.stringify(request)),
+        body: await gzip(JSON.stringify({ ...request, id })),
         headers: {
           authorization: `Bearer ${apiKey}`,
           "content-type": "application/json",
@@ -138,13 +132,7 @@ export async function deployFile({
         status,
         message,
       });
-      return {
-        text: "",
-        detail: {
-          status: response.status,
-          message: await response.text(),
-        },
-      };
+      return;
     }
   }
   console.log(`deployed output ${id} to MServe`);
@@ -165,6 +153,8 @@ export async function deployFilesOrDirectories({
 
   const { protocol, host } = parsedURL;
 
+  const deployments: Promise<void>[] = [];
+
   for (const file of paths) {
     const stat = await fs.stat(file);
     if (
@@ -172,21 +162,29 @@ export async function deployFilesOrDirectories({
       (path.extname(file) === ".html" || path.extname(file) === ".json")
     ) {
       const id = path.basename(file).replace(/\.(html|json)$/, "");
-      void deployFile({
-        file,
-        id,
-        project,
-        apiKey,
-        mserve: { protocol, host },
-      });
+      deployments.push(
+        deployFile({
+          file,
+          id,
+          project,
+          apiKey,
+          mserve: { protocol, host },
+        }),
+      );
     } else if (stat.isDirectory()) {
       const paths = (await fs.readdir(file)).map((f) => path.join(file, f));
-      await deployFilesOrDirectories({
-        paths,
-        project,
-        apiKey,
-        origin,
-      });
+      deployments.push(
+        deployFilesOrDirectories({
+          paths,
+          project,
+          apiKey,
+          origin,
+        }),
+      );
+    } else {
+      console.log("ignoring file:", file);
     }
   }
+
+  await Promise.all(deployments);
 }
