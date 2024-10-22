@@ -1,4 +1,11 @@
 {
+  "avatars": [
+    {
+      "name": "mickey mouse",
+      "meshFileUrl": "https:/disney.example.com/mickey.glb",
+      "thumbnailUrl": "https:/disney.example.com/mickey.png"
+    }
+  ],
   "mmlDocuments": {
     "0": {
       "url": "wss://mmlhosting.com/v1/mserve-cli-test-472574_collision-events",

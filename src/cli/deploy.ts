@@ -40,7 +40,10 @@ export async function deployFile({
   console.log("deploying file", file, "with id", id);
   interface MMLWorldInstanceRequest {
     name: string;
-    mmlDocumentsConfiguration: MMLWorldConfig;
+    mmlDocumentsConfiguration: Pick<MMLWorldConfig, "mmlDocuments">;
+    avatarConfiguration?: {
+      availableAvatars: MMLWorldConfig["avatars"];
+    };
   }
 
   interface Request {
@@ -98,9 +101,18 @@ export async function deployFile({
       return;
     }
   } else if (file.endsWith(".json")) {
+    const { avatars, mmlDocuments } = JSON.parse(source) as Record<
+      string,
+      unknown
+    >;
     const request: MMLWorldInstanceRequest = {
       name: id,
-      mmlDocumentsConfiguration: JSON.parse(source) as unknown,
+      mmlDocumentsConfiguration: {
+        mmlDocuments,
+      },
+      avatarConfiguration: {
+        availableAvatars: avatars,
+      },
     };
     let response = await fetch(worldInstancesUrl + "/" + id, {
       method: "POST",
